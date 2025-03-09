@@ -4,17 +4,17 @@ if game.PlaceId == 8619263259 then
     local LocalPlayer = Players.LocalPlayer
     local Character = LocalPlayer and LocalPlayer.Character
     local HRP = Character and Character:FindFirstChild("HumanoidRootPart")
-    
+
     local teleportCount = 0
     local teleportedThisSpawn = false
-    
+
     local function notify(message)
         local gui = LocalPlayer:FindFirstChild("PlayerGui")
         if gui then
             local notification = Instance.new("ScreenGui")
             notification.Name = "NotificationGui"
             notification.Parent = gui
-    
+
             local textLabel = Instance.new("TextLabel")
             textLabel.Parent = notification
             textLabel.BackgroundTransparency = 0.5
@@ -24,20 +24,20 @@ if game.PlaceId == 8619263259 then
             textLabel.Position = UDim2.new(0.5, -100, 0.9, -25)
             textLabel.Text = message
             textLabel.TextScaled = true
-    
+
             game:GetService("TweenService"):Create(textLabel, TweenInfo.new(1), {BackgroundTransparency = 0}):Play()
             game:GetService("TweenService"):Create(textLabel, TweenInfo.new(7, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {BackgroundTransparency = 1}):Play()
             game:GetService("Debris"):AddItem(notification, 8)
         end
     end
-    
+
     local function teleportToGrani()
         local blackMarket = workspace:FindFirstChild("Stalls"):FindFirstChild("Black Market")
         if not blackMarket then
             notify("Black Market stall not found.")
             return false
         end
-    
+
         local graniPart = nil
         for _, v in ipairs(blackMarket:GetDescendants()) do
             if v.Name == "Grani" and v.Parent.Parent.Name == "Grani" then
@@ -45,7 +45,7 @@ if game.PlaceId == 8619263259 then
                 break
             end
         end
-    
+
         if graniPart then
             if HRP and not teleportedThisSpawn then
                 notify("Teleporting to Grani...")
@@ -64,11 +64,11 @@ if game.PlaceId == 8619263259 then
             return false
         end
     end
-    
+
     local function checkAndTeleport()
         teleportToGrani()
     end
-    
+
     local function loopCheck()
         while true do
             if graniExists() then
@@ -79,7 +79,7 @@ if game.PlaceId == 8619263259 then
             wait(1)
         end
     end
-    
+
     local function graniExists()
         local blackMarket = workspace:FindFirstChild("Stalls"):FindFirstChild("Black Market")
         if not blackMarket then
@@ -92,7 +92,7 @@ if game.PlaceId == 8619263259 then
         end
         return false
     end
-    
+
     -- Initial check and loop
     if LocalPlayer and LocalPlayer.Character then
         if graniExists() then
