@@ -1,5 +1,6 @@
 -- Checking game 
 if game.PlaceId == 8619263259 then
+    print("Script starting...")
     local Players = game:GetService("Players")
     local LocalPlayer = Players.LocalPlayer
     local Character = LocalPlayer and LocalPlayer.Character
