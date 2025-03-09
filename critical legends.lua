@@ -8,7 +8,7 @@ if game.PlaceId == 8619263259 then
     local HRP = Character and Character:FindFirstChild("HumanoidRootPart")
     local RunService = game:GetService("RunService")
     local ReplicatedStorage = game:GetService("ReplicatedStorage")
-    local workspace = game.GetService("Workspace")
+    local workspace = game:GetService("Workspace")
 
     local spawnTime = math.random(600, 900) -- 10 to 15 minutes in seconds
     local despawnTime = 300 -- 5 minutes in seconds
