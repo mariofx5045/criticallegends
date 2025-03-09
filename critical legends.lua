@@ -26,7 +26,7 @@ if game.PlaceId == 8619263259 then
             textLabel.TextScaled = true
     
             game:GetService("TweenService"):Create(textLabel, TweenInfo.new(1), {BackgroundTransparency = 0}):Play()
-            game:GetService("TweenService"):Create(textLabel, TweenInfo.new(7, Enum.EasingStyle.Sine, Enum.EasingDirection.Out, 0, 1), {BackgroundTransparency = 1}):Play()
+            game:GetService("TweenService"):Create(textLabel, TweenInfo.new(7, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {BackgroundTransparency = 1}):Play()
             game:GetService("Debris"):AddItem(notification, 8)
         end
     end
