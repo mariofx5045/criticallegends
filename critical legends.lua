@@ -6,6 +6,7 @@ if game.PlaceId == 8619263259 then
     local HRP = Character and Character:FindFirstChild("HumanoidRootPart")
     
     local teleportCount = 0
+    local teleportedThisSpawn = false -- Flag to track if teleported during the current Grani spawn
     
     local function teleportToGrani()
         local blackMarket = workspace:FindFirstChild("Stalls"):FindFirstChild("Black Market")
@@ -23,33 +24,37 @@ if game.PlaceId == 8619263259 then
         end
     
         if graniPart then
-            if HRP then
+            if HRP and not teleportedThisSpawn then -- Check if HRP exists and not already teleported
                 print("Teleporting to Grani...")
                 HRP.CFrame = graniPart.CFrame
                 teleportCount = teleportCount + 1
+                teleportedThisSpawn = true -- Set the flag
                 print("Teleported to Grani. Teleport count:", teleportCount)
                 return true
+            elseif teleportedThisSpawn then
+                --Do nothing, already teleported.
+                return true;
             else
                 print("HumanoidRootPart not found. Character may not be fully loaded.")
                 return false
             end
         else
-            print("Grani part not found.")
+            --print("Grani part not found.") --removed to reduce spam
             return false
         end
     end
     
     local function checkAndTeleport()
-        if teleportToGrani() then
-            -- Grani was found and teleported to.
-        else
-            -- Grani was not found.
-        end
+        teleportToGrani()
     end
     
     local function loopCheck()
         while true do
-            checkAndTeleport()
+            if graniExists() then
+                checkAndTeleport()
+            else
+                teleportedThisSpawn = false -- Reset the flag when Grani is gone
+            end
             wait(1)
         end
     end
@@ -79,7 +84,7 @@ if game.PlaceId == 8619263259 then
         local playerAddedConnection
         playerAddedConnection = Players.PlayerAdded:Connect(function(player)
             if player == LocalPlayer then
-                playerAddedConnection:Disconnect() -- Disconnect after finding LocalPlayer
+                playerAddedConnection:Disconnect()
                 local characterAddedConnection
                 characterAddedConnection = LocalPlayer.CharacterAdded:Connect(function(char)
                     Character = char
@@ -90,7 +95,7 @@ if game.PlaceId == 8619263259 then
                         print("Grani is not currently present.")
                     end
                     loopCheck()
-                    characterAddedConnection:Disconnect() -- Disconnect after starting the loop
+                    characterAddedConnection:Disconnect()
                 end)
             end
         end)
