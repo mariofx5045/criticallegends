@@ -1,84 +1,89 @@
 -- Checking game 
 if game.PlaceId == 8619263259 then
-    -- Version of the script
-    local CurrentVersion = "Auto Blackmarket" 
-
-    -- Call library
-    local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))()
-
-    -- Main shit
-    local Window = Library.CreateLib(CurrentVersion,"DarkTheme")
-    
-    -- Blackmarket tab
-
-    local ATab = Window:NewTab("Auto Blackmarket")
-    local ASection = Window:NewSection("Auto Blackmarket")
-
-    -- Toggle Variables
-
+    local Players = game:GetService("Players").LocalPlayer
+    local LocalPlayer = Players.LocalPlayer
+    local Character = LocalPlayer.Character
+    local HRP = Character and Character:FindFirstChild("HumanoidRootPart")
     local workspace = game:GetService("Workspace")
-    local Players = game:GetService("Players")
-    local task = require(game:GetService("ReplicatedStorage").task) -- Required for task.wait
 
-    local Tp = true -- Default toggle state
-    ASection:NewToggle("Check and auto teleports notifies Blackmarket", function(state)
-        Tp = state
-        task.spawn(function()
-            while true do
-                if Tp then
-                    local BlackMarket = workspace:FindFirstChild("Stalls"):FindFirstChild("Black Market")
-                    if BlackMarket then
-                        local graniPart = nil
-                        for _, descendant in ipairs(BlackMarket:GetDescendants()) do
-                            if descendant.Name == "Grani" and descendant.Parent.Parent.Name == "Grani" then
-                                graniPart = descendant
-                                break
-                            end
-                        end
-        
-                        if graniPart then
-                            local HRP = Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-                            if HRP then
-                                HRP.CFrame = graniPart.CFrame
-                                local notificationText = "Teleported to Black Market."
-                                game:GetService("StarterGui"):SetCore("SendNotification", {
-                                    Title = "Teleport",
-                                    Text = notificationText,
-                                    Duration = 8,
-                                })
-                                print("Teleported player to Black Market.")
-                            else
-                                print("Character not loaded yet.")
-                            end
-        
-                            local function onGraniRemoved(removedPart)
-                                if removedPart == graniPart then
-                                    print("Grani part removed.")
-                                    return true
-                                end
-                                return false
-                            end
-        
-                            local connection
-                            connection = workspace.DescendantRemoving:Connect(function(removedPart)
-                                if onGraniRemoved(removedPart) then
-                                    connection:Disconnect()
-                                end
-                            end)
-        
-                            repeat task.wait() until not graniPart or not graniPart.Parent
-                            print("Grani part or parent no longer exists. Waiting for respawn.")
-                        else
-                            print("Grani part not found.")
-                        end
-                    else
-                        print("Black Market not found.")
-                    end
-                    repeat task.wait() until workspace:FindFirstChild("Stalls"):FindFirstChild("Black Market")
-                else
-                    task.wait(1) -- Wait when toggle is off to reduce CPU usage
-                end
+    local function teleportToGrani()
+    local blackMarket = workspace:FindFirstChild("Stalls"):FindFirstChild("Black Market")
+    if not blackMarket then
+        print("Black Market stall not found.")
+        return
+    end
+
+    local graniPart = nil
+    for _, v in ipairs(blackMarket:GetDescendants()) do
+        if v.Name == "Grani" and v.Parent.Parent.Name == "Grani" then
+        graniPart = v
+        break
+        end
+    end
+
+    if graniPart then
+        if HRP then
+        print("Teleporting to Grani...")
+        HRP.CFrame = graniPart.CFrame
+        print("Teleported to Grani.")
+        return true
+        else
+        print("HumanoidRootPart not found. Character may not be fully loaded.")
+        return false
+        end
+    else
+        print("Grani part not found.")
+        return false
+    end
+    end
+
+    local function checkAndTeleport()
+    if teleportToGrani() then
+        -- Grani was found and teleported to.
+    else
+        -- Grani was not found.
+    end
+    end
+
+    local function loopCheck()
+    while true do
+        checkAndTeleport()
+        wait(1) -- Adjust the wait time as needed (e.g., 0.5, 2)
+    end
+    end
+
+    local function graniExists()
+        local blackMarket = workspace:FindFirstChild("Stalls"):FindFirstChild("Black Market")
+        if not blackMarket then
+            return false;
+        end
+        for _, v in ipairs(blackMarket:GetDescendants()) do
+            if v.Name == "Grani" and v.Parent.Parent.Name == "Grani" then
+                return true;
             end
+        end
+        return false;
+    end
+
+    -- Initial check and loop
+    if Character then
+        if graniExists() then
+            print("Grani is currently present.")
+        else
+            print("Grani is not currently present.")
+        end
+        loopCheck()
+    else
+        CharacterAddedConnection = LocalPlayer.CharacterAdded:Connect(function(char)
+            Character = char
+            HRP = char:FindFirstChild("HumanoidRootPart")
+            if graniExists() then
+                print("Grani is currently present.")
+            else
+                print("Grani is not currently present.")
+            end
+            loopCheck()
+            CharacterAddedConnection:Disconnect()
         end)
-    end)
+    end
 end
