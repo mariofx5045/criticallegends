@@ -71,10 +71,16 @@ if game.PlaceId == 8619263259 then
 
     local function loopCheck()
         while true do
-            if graniExists() then
-                checkAndTeleport()
+            if graniExists then -- Check if graniExists is not nil
+                if graniExists() then
+                    checkAndTeleport()
+                else
+                    teleportedThisSpawn = false
+                end
             else
-                teleportedThisSpawn = false
+                notify("Error: graniExists function is nil!")
+                print("Error: graniExists function is nil!") -- Add print for extra debugging
+                break -- Exit the loop to prevent further errors
             end
             wait(1)
         end
