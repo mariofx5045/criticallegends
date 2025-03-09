@@ -76,18 +76,22 @@ if game.PlaceId == 8619263259 then
         end
         loopCheck()
     else
-        local connection
-        connection = Players.PlayerAdded:Connect(function(player)
+        local playerAddedConnection
+        playerAddedConnection = Players.PlayerAdded:Connect(function(player)
             if player == LocalPlayer then
-                Character = LocalPlayer.Character
-                HRP = Character and Character:FindFirstChild("HumanoidRootPart")
-                if graniExists() then
-                    print("Grani is currently present.")
-                else
-                    print("Grani is not currently present.")
-                end
-                loopCheck()
-                connection:Disconnect()
+                playerAddedConnection:Disconnect() -- Disconnect after finding LocalPlayer
+                local characterAddedConnection
+                characterAddedConnection = LocalPlayer.CharacterAdded:Connect(function(char)
+                    Character = char
+                    HRP = char:FindFirstChild("HumanoidRootPart")
+                    if graniExists() then
+                        print("Grani is currently present.")
+                    else
+                        print("Grani is not currently present.")
+                    end
+                    loopCheck()
+                    characterAddedConnection:Disconnect() -- Disconnect after starting the loop
+                end)
             end
         end)
     end
