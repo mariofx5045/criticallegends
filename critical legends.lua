@@ -1,104 +1,142 @@
 -- Checking game 
 if game.PlaceId == 8619263259 then
     print("Script starting...")
+    local BlackMarket = workspace:FindFirstChild("Stalls"):FindFirstChild("Black Market")
     local Players = game:GetService("Players")
     local LocalPlayer = Players.LocalPlayer
-    local Character = LocalPlayer and LocalPlayer.Character
+    local Character = LocalPlayer.Character
     local HRP = Character and Character:FindFirstChild("HumanoidRootPart")
+    local RunService = game:GetService("RunService")
+    local workspace = game:GetService("Workspace")
 
+    local spawnTime = math.random(600, 900) -- 10 to 15 minutes in seconds
+    local despawnTime = 300 -- 5 minutes in seconds
+    local timer = 0
+    local teleported = false
     local teleportCount = 0
-    local teleportedThisSpawn = false -- Flag to track if teleported during the current Grani spawn
+    local loopCount = 0
 
-    local function teleportToGrani()
-        local blackMarket = workspace:FindFirstChild("Stalls"):FindFirstChild("Black Market")
-        if not blackMarket then
-            print("Black Market stall not found.")
-            return false
-        end
+    -- UI Setup
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Name = "BlackMarketInfo"
+    screenGui.Parent = LocalPlayer.PlayerGui
 
-        local graniPart = nil
-        for _, v in ipairs(blackMarket:GetDescendants()) do
+    local infoFrame = Instance.new("Frame")
+    infoFrame.Name = "InfoFrame"
+    infoFrame.Size = UDim2.new(0, 200, 0, 100)
+    infoFrame.Position = UDim2.new(1, -210, 0, 10)
+    infoFrame.AnchorPoint = Vector2.new(1, 0)
+    infoFrame.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2)
+    infoFrame.BorderSizePixel = 0
+    infoFrame.Parent = screenGui
+
+    local timerLabel = Instance.new("TextLabel")
+    timerLabel.Name = "TimerLabel"
+    timerLabel.Size = UDim2.new(1, 0, 0.3, 0)
+    timerLabel.Position = UDim2.new(0, 0, 0, 0)
+    timerLabel.BackgroundColor3 = Color3.new(1, 1, 1)
+    timerLabel.BackgroundTransparency = 1
+    timerLabel.TextColor3 = Color3.new(1, 1, 1)
+    timerLabel.TextSize = 18
+    timerLabel.Font = Enum.Font.SourceSansBold
+    timerLabel.Text = "Time: 0:00"
+    timerLabel.Parent = infoFrame
+
+    local teleportLabel = Instance.new("TextLabel")
+    teleportLabel.Name = "TeleportLabel"
+    teleportLabel.Size = UDim2.new(1, 0, 0.3, 0)
+    teleportLabel.Position = UDim2.new(0, 0, 0.3, 0)
+    teleportLabel.BackgroundColor3 = Color3.new(1, 1, 1)
+    teleportLabel.BackgroundTransparency = 1
+    teleportLabel.TextColor3 = Color3.new(1, 1, 1)
+    teleportLabel.TextSize = 18
+    teleportLabel.Font = Enum.Font.SourceSansBold
+    teleportLabel.Text = "Teleports: 0"
+    teleportLabel.Parent = infoFrame
+
+    local statusLabel = Instance.new("TextLabel")
+    statusLabel.Name = "StatusLabel"
+    statusLabel.Size = UDim2.new(1, 0, 0.3, 0)
+    statusLabel.Position = UDim2.new(0, 0, 0.6, 0)
+    statusLabel.BackgroundColor3 = Color3.new(1, 1, 1)
+    statusLabel.BackgroundTransparency = 1
+    statusLabel.TextColor3 = Color3.new(1, 1, 1)
+    statusLabel.TextSize = 18
+    statusLabel.Font = Enum.Font.SourceSansBold
+    statusLabel.Text = "Waiting..."
+    statusLabel.Parent = infoFrame
+
+    local function formatTime(seconds)
+        local minutes = math.floor(seconds / 60)
+        local remainingSeconds = seconds % 60
+        return string.format("%d:%02d", minutes, remainingSeconds)
+    end
+
+    local function findGrani()
+        for _, v in pairs(BlackMarket:GetDescendants()) do
             if v.Name == "Grani" and v.Parent.Parent.Name == "Grani" then
-                graniPart = v
-                break
+                return v
             end
         end
+        return nil
+    end
 
-        if graniPart then
-            if HRP and not teleportedThisSpawn then -- Check if HRP exists and not already teleported
-                print("Teleporting to Grani...")
-                HRP.CFrame = graniPart.CFrame
-                teleportCount = teleportCount + 1
-                teleportedThisSpawn = true -- Set the flag
-                print("Teleported to Grani. Teleport count:", teleportCount)
-                return true
-            elseif teleportedThisSpawn then
-                --Do nothing, already teleported.
-                return true;
-            else
-                print("HumanoidRootPart not found. Character may not be fully loaded.")
-                return false
-            end
-        else
-            --print("Grani part not found.") --removed to reduce spam
-            return false
+    local function teleportToGrani(graniPart)
+        if HRP and graniPart then
+            HRP.CFrame = graniPart.CFrame
+            teleportCount = teleportCount + 1
+            teleported = true
+            teleportLabel.Text = "Teleports: " .. teleportCount
+            statusLabel.Text = "Teleported!"
         end
     end
 
-    local function checkAndTeleport()
-        teleportToGrani()
+    local function resetLoop()
+        timer = 0
+        teleported = false
+        loopCount = loopCount + 1
+        statusLabel.Text = "Waiting..."
+        spawnTime = math.random(600, 900)
     end
 
-    local function loopCheck()
-        while true do
-            if graniExists() then
-                checkAndTeleport()
-            else
-                teleportedThisSpawn = false -- Reset the flag when Grani is gone
-            end
-            wait(1)
-        end
-    end
-
-    local function graniExists()
-        local blackMarket = workspace:FindFirstChild("Stalls"):FindFirstChild("Black Market")
-        if not blackMarket then
-            return false
-        end
-        for _, v in ipairs(blackMarket:GetDescendants()) do
+    local function despawnGrani()
+        for _, v in pairs(BlackMarket:GetDescendants()) do
             if v.Name == "Grani" and v.Parent.Parent.Name == "Grani" then
-                return true
+                v.Parent.Parent:Destroy()
             end
         end
-        return false
     end
 
-    -- Initial check and loop
-    if LocalPlayer and LocalPlayer.Character then
-        if graniExists() then
-            print("Grani is currently present.")
-        else
-            print("Grani is not currently present.")
-        end
-        loopCheck()
-    else
-        local playerAddedConnection
-        playerAddedConnection = Players.PlayerAdded:Connect(function(player)
-            if player == LocalPlayer then
-                playerAddedConnection:Disconnect()
-                local characterAddedConnection
-                characterAddedConnection = LocalPlayer.CharacterAdded:Connect(function(char)
-                    Character = char
-                    HRP = char:FindFirstChild("HumanoidRootPart")
-                    if graniExists() then
-                        print("Grani is currently present.")
-                    else
-                        print("Grani is not currently present.")
-                    end
-                    loopCheck()
-                    characterAddedConnection:Disconnect()
-                end)
-            end
-        end)
+    local function spawnGrani()
+        local newGrani = game:GetService("ReplicatedStorage").Grani:Clone()
+        newGrani.Parent = BlackMarket
+        newGrani.Name = "Grani"
+        newGrani:SetPrimaryPartCFrame(CFrame.new(BlackMarket.Position + Vector3.new(0,5,0)))
     end
+
+    RunService.Heartbeat:Connect(function(deltaTime)
+        timer = timer + deltaTime
+        timerLabel.Text = "Time: " .. formatTime(timer)
+
+        if loopCount < 10 then
+            if timer >= spawnTime and not findGrani() then
+                spawnGrani()
+                timer = 0
+                statusLabel.Text = "Grani Spawned!"
+            end
+
+            local graniPart = findGrani()
+            if graniPart and not teleported then
+                teleportToGrani(graniPart)
+            end
+
+            if graniPart and timer >= despawnTime and teleported then
+                despawnGrani()
+                resetLoop()
+            end
+
+        else
+            statusLabel.Text = "Loop Complete"
+        end
+    end)
 end
