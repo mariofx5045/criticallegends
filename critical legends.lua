@@ -7,7 +7,8 @@ if game.PlaceId == 8619263259 then
     local Character = LocalPlayer.Character
     local HRP = Character and Character:FindFirstChild("HumanoidRootPart")
     local RunService = game:GetService("RunService")
-    local workspace = game:GetService("Workspace")
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+    local workspace =  game:GetService("Workspace")
 
     local spawnTime = math.random(600, 900) -- 10 to 15 minutes in seconds
     local despawnTime = 300 -- 5 minutes in seconds
@@ -108,15 +109,14 @@ if game.PlaceId == 8619263259 then
     end
 
     local function spawnGrani()
-        local newGrani = game:GetService("ReplicatedStorage").Grani:Clone()
+        local newGrani = ReplicatedStorage.Grani:Clone()
         newGrani.Parent = BlackMarket
         newGrani.Name = "Grani"
-        newGrani:SetPrimaryPartCFrame(CFrame.new(BlackMarket.Position + Vector3.new(0,5,0)))
+        newGrani:SetPrimaryPartCFrame(CFrame.new(BlackMarket.Position + Vector3.new(0, 5, 0)))
     end
 
-    RunService.Heartbeat:Connect(function(deltaTime)
-        timer = timer + deltaTime
-        timerLabel.Text = "Time: " .. formatTime(timer)
+    RunService.Heartbeat:Connect(function()
+        timerLabel.Text = "Time: " .. formatTime(tick()) -- Using tick() for uptime
 
         if loopCount < 10 then
             if timer >= spawnTime and not findGrani() then
